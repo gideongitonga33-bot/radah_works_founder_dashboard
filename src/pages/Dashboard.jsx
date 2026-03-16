@@ -6,6 +6,9 @@ import {
   Users, TrendingUp, AlertTriangle, DollarSign,
   ArrowRight, CheckCircle2, Clock, Zap, Target, BarChart3
 } from 'lucide-react';
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
+
 const StatCard = ({ icon: Icon, label, value, sub, color = 'amber', href }) => {
   const colors = {
     amber: 'text-amber-500 bg-amber-50',
@@ -34,27 +37,23 @@ const StatCard = ({ icon: Icon, label, value, sub, color = 'amber', href }) => {
   );
 };
 
-const ProgressRing = ({ value, label, color }) => {
-  const r = 30;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - ((value || 0) / 100) * circ;
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="relative w-20 h-20">
-        <svg width="80" height="80" className="-rotate-90">
-          <circle cx="40" cy="40" r={r} fill="none" stroke="hsl(40,10%,92%)" strokeWidth="6" />
-          <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="6"
-            strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 0.5s ease' }} />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-sm font-semibold text-foreground">{value || 0}%</span>
-        </div>
-      </div>
-      <span className="text-xs text-muted-foreground text-center">{label}</span>
+const ProgressRing = ({ value, label, color }) => (
+  <div className="flex flex-col items-center gap-2">
+    <div className="w-20 h-20">
+      <CircularProgressbar
+        value={value || 0}
+        text={`${value || 0}%`}
+        styles={buildStyles({
+          textSize: '22px',
+          pathColor: color,
+          textColor: 'hsl(220,25%,12%)',
+          trailColor: 'hsl(40,10%,92%)',
+        })}
+      />
     </div>
-  );
-};
+    <span className="text-xs text-muted-foreground text-center">{label}</span>
+  </div>
+);
 
 export default function Dashboard() {
   const { currentProject } = useProject();
