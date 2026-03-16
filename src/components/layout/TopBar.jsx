@@ -1,7 +1,8 @@
-import { Bell, ChevronDown, Sparkles } from 'lucide-react';
+import { Bell, ChevronDown, Sparkles, Sun, Moon } from 'lucide-react';
 import { useProject } from '@/lib/ProjectContext';
 import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
+import { useState, useEffect } from 'react';
 
 const stageColors = {
   Idea: 'bg-purple-100 text-purple-700',
@@ -14,6 +15,12 @@ const stageColors = {
 export default function TopBar({ title }) {
   const { currentProject } = useProject();
   const { user } = useAuth();
+  const [dark, setDark] = useState(() => localStorage.getItem('radah_dark') === 'true');
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    localStorage.setItem('radah_dark', dark);
+  }, [dark]);
 
   return (
     <header className="h-16 flex items-center justify-between px-6 border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-30">
@@ -27,10 +34,17 @@ export default function TopBar({ title }) {
           </span>
         )}
       </div>
-      <div className="flex items-center gap-3">
-        <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg border border-border hover:border-amber-300 hover:bg-amber-50 transition-all">
+      <div className="flex items-center gap-2">
+        <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg border border-border hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-all">
           <Sparkles size={14} className="text-amber-500" />
           <span className="hidden sm:inline">AI Assistant</span>
+        </button>
+        <button
+          onClick={() => setDark(!dark)}
+          className="w-9 h-9 flex items-center justify-center rounded-xl border border-border hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+          title="Toggle dark mode"
+        >
+          {dark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
         <button className="relative w-9 h-9 flex items-center justify-center rounded-xl border border-border hover:bg-muted transition-colors">
           <Bell size={16} />
