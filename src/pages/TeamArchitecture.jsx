@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useProject } from '@/lib/ProjectContext';
 import {
-  Sparkles, Plus, Trash2, Edit2, Check, X, Loader2, Users
+  Sparkles, Plus, Trash2, Edit2, Check, X, Loader2, Users, Map
 } from 'lucide-react';
+import TeamMap from '@/components/TeamMap';
 
 const statusColors = {
   open: 'bg-amber-100 text-amber-700',
@@ -189,6 +190,17 @@ Generate 5-7 essential team roles. Be specific to the project stage and industry
           </button>
         </div>
       </div>
+
+      {/* Visual Team Map */}
+      {roles.length > 0 && (
+        <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-5">
+            <Map size={16} className="text-amber-500" />
+            <h3 className="font-serif text-base font-semibold">Team Architecture Map</h3>
+          </div>
+          <TeamMap roles={roles} />
+        </div>
+      )}
 
       {/* Progress */}
       <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
