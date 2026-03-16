@@ -4,10 +4,8 @@ import { useProject } from '@/lib/ProjectContext';
 import { Link } from 'react-router-dom';
 import {
   Users, TrendingUp, AlertTriangle, DollarSign,
-  ArrowRight, CheckCircle2, Clock, Zap, Target, BarChart3
+  ArrowRight, CheckCircle2, Clock, Zap, Target
 } from 'lucide-react';
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
 
 const StatCard = ({ icon: Icon, label, value, sub, color = 'amber', href }) => {
   const colors = {
@@ -37,23 +35,29 @@ const StatCard = ({ icon: Icon, label, value, sub, color = 'amber', href }) => {
   );
 };
 
-const ProgressRing = ({ value, label, color }) => (
-  <div className="flex flex-col items-center gap-2">
-    <div className="w-20 h-20">
-      <CircularProgressbar
-        value={value || 0}
-        text={`${value || 0}%`}
-        styles={buildStyles({
-          textSize: '22px',
-          pathColor: color,
-          textColor: 'hsl(220,25%,12%)',
-          trailColor: 'hsl(40,10%,92%)',
-        })}
-      />
+const ProgressRing = ({ value, label, color }) => {
+  const r = 30;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - ((value || 0) / 100) * circ;
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="relative w-20 h-20">
+        <svg width="80" height="80" className="-rotate-90">
+          <circle cx="40" cy="40" r={r} fill="none" stroke="hsl(40,10%,92%)" strokeWidth="6" />
+          <circle
+            cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="6"
+            strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+            style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-sm font-semibold text-foreground">{value || 0}%</span>
+        </div>
+      </div>
+      <span className="text-xs text-muted-foreground text-center">{label}</span>
     </div>
-    <span className="text-xs text-muted-foreground text-center">{label}</span>
-  </div>
-);
+  );
+};
 
 export default function Dashboard() {
   const { currentProject } = useProject();
@@ -94,13 +98,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      {/* Welcome */}
       <div>
         <h2 className="font-serif text-2xl font-semibold text-foreground">Mission Control</h2>
         <p className="text-muted-foreground text-sm mt-1">Here's the status of <span className="text-foreground font-medium">{currentProject.name}</span></p>
       </div>
 
-      {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Users} label="Open Roles" value={openRoles} sub={`${filledRoles} filled`} color="blue" href="/TeamArchitecture" />
         <StatCard icon={Target} label="Next Milestone" value={nextMilestone?.title || '—'} sub={nextMilestone?.due_date || 'No active milestones'} color="amber" href="/ProjectExecution" />
@@ -108,9 +110,7 @@ export default function Dashboard() {
         <StatCard icon={DollarSign} label="Budget Used" value={budgetTotal ? `$${(budgetUsed / 1000).toFixed(0)}k` : '—'} sub={budgetTotal ? `of $${(budgetTotal / 1000).toFixed(0)}k total` : 'Not set'} color="green" href="/ProjectExecution" />
       </div>
 
-      {/* Health + Progress */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Startup Health */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-border p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-serif text-lg font-semibold">Startup Health</h3>
@@ -124,13 +124,15 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Investor Readiness */}
         <div className="bg-gradient-to-br from-[hsl(220,25%,12%)] to-[hsl(220,20%,22%)] rounded-2xl p-6 text-white">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp size={16} className="text-amber-400" />
             <h3 className="font-serif text-base font-semibold">Investor Readiness</h3>
           </div>
-          <div className="text-5xl font-bold font-sans mb-1">{currentProject.investor_readiness_score || 0}<span className="text-2xl text-amber-400/70">%</span></div>
+          <div className="text-5xl font-bold font-sans mb-1">
+            {currentProject.investor_readiness_score || 0}
+            <span className="text-2xl text-amber-400/70">%</span>
+          </div>
           <p className="text-slate-400 text-sm mb-4">
             {(currentProject.investor_readiness_score || 0) < 40 ? 'Early stage — focus on traction' :
              (currentProject.investor_readiness_score || 0) < 70 ? 'Making progress — build deck' : 'Strong position — pitch ready'}
@@ -141,9 +143,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Milestones + Open Roles */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Recent Milestones */}
         <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-serif text-base font-semibold">Milestones</h3>
@@ -169,7 +169,9 @@ export default function Dashboard() {
                   <div className="text-xs text-muted-foreground shrink-0">
                     {m.status === 'completed' ? <CheckCircle2 size={14} className="text-green-500" /> :
                      m.status === 'in_progress' ? <Clock size={14} className="text-amber-500" /> :
-                     <div className="w-10 h-1.5 bg-muted rounded-full overflow-hidden"><div className="h-full bg-amber-400 rounded-full" style={{ width: `${m.progress || 0}%` }} /></div>}
+                     <div className="w-10 h-1.5 bg-muted rounded-full overflow-hidden">
+                       <div className="h-full bg-amber-400 rounded-full" style={{ width: `${m.progress || 0}%` }} />
+                     </div>}
                   </div>
                 </div>
               ))}
@@ -177,7 +179,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Open Roles */}
         <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-serif text-base font-semibold">Open Roles</h3>
