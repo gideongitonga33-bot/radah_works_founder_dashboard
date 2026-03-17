@@ -4,7 +4,8 @@ import { useProject } from '@/lib/ProjectContext';
 import { Link } from 'react-router-dom';
 import {
   Users, TrendingUp, AlertTriangle, DollarSign,
-  ArrowRight, CheckCircle2, Clock, Zap, Target
+  ArrowRight, CheckCircle2, Clock, Zap, Target,
+  Sparkles, Activity, Plus, FileText, UserSearch, MapPin
 } from 'lucide-react';
 
 const StatCard = ({ icon: Icon, label, value, sub, color = 'amber', href }) => {
@@ -44,11 +45,9 @@ const ProgressRing = ({ value, label, color }) => {
       <div className="relative w-20 h-20">
         <svg width="80" height="80" className="-rotate-90">
           <circle cx="40" cy="40" r={r} fill="none" stroke="hsl(40,10%,92%)" strokeWidth="6" />
-          <circle
-            cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="6"
+          <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="6"
             strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-          />
+            style={{ transition: 'stroke-dashoffset 0.5s ease' }} />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-sm font-semibold text-foreground">{value || 0}%</span>
@@ -59,19 +58,52 @@ const ProgressRing = ({ value, label, color }) => {
   );
 };
 
+const quickActions = [
+  { label: 'Add Milestone', icon: Plus, href: '/ProjectExecution', color: 'bg-amber-50 text-amber-600 hover:bg-amber-100' },
+  { label: 'Find Candidates', icon: UserSearch, href: '/CandidatePipeline', color: 'bg-blue-50 text-blue-600 hover:bg-blue-100' },
+  { label: 'Update Brief', icon: FileText, href: '/ProjectDescription', color: 'bg-purple-50 text-purple-600 hover:bg-purple-100' },
+  { label: 'Investor Report', icon: TrendingUp, href: '/InvestorReadiness', color: 'bg-green-50 text-green-600 hover:bg-green-100' },
+];
+
 export default function Dashboard() {
   const { currentProject } = useProject();
   const [roles, setRoles] = useState([]);
   const [milestones, setMilestones] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [activities, setActivities] = useState([]);
+  const [candidates, setCandidates] = useState([]);
+  const [aiPulse, setAiPulse] = useState('');
+  const [loadingPulse, setLoadingPulse] = useState(false);
 
   useEffect(() => {
-    if (!currentProject?.id) { setLoading(false); return; }
+    if (!currentProject?.id) return;
     Promise.all([
       base44.entities.TeamRole.filter({ project_id: currentProject.id }),
       base44.entities.Milestone.filter({ project_id: currentProject.id }),
-    ]).then(([r, m]) => { setRoles(r); setMilestones(m); }).finally(() => setLoading(false));
+      base44.entities.Activity.filter({ project_id: currentProject.id }, '-created_date', 8),
+      base44.entities.Candidate.filter({ project_id: currentProject.id }),
+    ]).then(([r, m, a, c]) => { setRoles(r); setMilestones(m); setActivities(a); setCandidates(c); });
   }, [currentProject?.id]);
+
+  const handleAIPulse = async () => {
+    setLoadingPulse(true);
+    const openRoles = roles.filter(r => r.status !== 'filled').length;
+    const completed = milestones.filter(m => m.status === 'completed').length;
+    const blocked = milestones.filter(m => m.status === 'blocked').length;
+    const res = await base44.integrations.Core.InvokeLLM({
+      prompt: `You are a startup advisor. Give a concise 2-sentence strategic pulse for this startup right now:
+
+Project: ${currentProject.name} (${currentProject.stage} stage)
+Team completion: ${currentProject.team_completion || 0}%
+Execution progress: ${currentProject.execution_progress || 0}%
+Investor readiness: ${currentProject.investor_readiness_score || 0}%
+Open roles: ${openRoles}, Milestones completed: ${completed}/${milestones.length}, Blockers: ${blocked}
+Candidates in pipeline: ${candidates.length}
+
+Give one insight about where they stand and one specific action they should take today. Be direct and actionable.`
+    });
+    setAiPulse(res);
+    setLoadingPulse(false);
+  };
 
   if (!currentProject) {
     return (
@@ -96,20 +128,54 @@ export default function Dashboard() {
   const budgetTotal = currentProject.budget_total || 0;
   const budgetPercent = budgetTotal > 0 ? Math.round((budgetUsed / budgetTotal) * 100) : 0;
 
+  const activityIcons = {
+    milestone: '🏁', candidate: '👤', role: '💼', document: '📄', note: '📝', investor: '💰'
+  };
+
   return (
     <div className="space-y-6 max-w-6xl">
-      <div>
-        <h2 className="font-serif text-2xl font-semibold text-foreground">Mission Control</h2>
-        <p className="text-muted-foreground text-sm mt-1">Here's the status of <span className="text-foreground font-medium">{currentProject.name}</span></p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="font-serif text-2xl font-semibold text-foreground">Mission Control</h2>
+          <p className="text-muted-foreground text-sm mt-1">Here's the status of <span className="text-foreground font-medium">{currentProject.name}</span></p>
+        </div>
+        <button
+          onClick={handleAIPulse}
+          disabled={loadingPulse}
+          className="flex items-center gap-2 px-4 py-2.5 border border-amber-300 bg-amber-50 text-amber-700 rounded-xl text-sm font-medium hover:bg-amber-100 transition-colors disabled:opacity-60"
+        >
+          {loadingPulse ? <Clock size={14} className="animate-spin" /> : <Sparkles size={14} />}
+          AI Pulse
+        </button>
       </div>
 
+      {/* AI Pulse */}
+      {aiPulse && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+          <Sparkles size={18} className="text-amber-500 mt-0.5 shrink-0" />
+          <p className="text-sm text-amber-900 leading-relaxed">{aiPulse}</p>
+        </div>
+      )}
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {quickActions.map(a => (
+          <Link key={a.label} to={a.href} className={`flex items-center gap-2.5 p-3 rounded-xl text-sm font-medium transition-all ${a.color}`}>
+            <a.icon size={16} />
+            {a.label}
+          </Link>
+        ))}
+      </div>
+
+      {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Users} label="Open Roles" value={openRoles} sub={`${filledRoles} filled`} color="blue" href="/TeamArchitecture" />
-        <StatCard icon={Target} label="Next Milestone" value={nextMilestone?.title || '—'} sub={nextMilestone?.due_date || 'No active milestones'} color="amber" href="/ProjectExecution" />
+        <StatCard icon={Target} label="Next Milestone" value={nextMilestone ? nextMilestone.title.substring(0, 20) + (nextMilestone.title.length > 20 ? '…' : '') : '—'} sub={nextMilestone?.due_date || 'No active milestones'} color="amber" href="/ProjectExecution" />
         <StatCard icon={AlertTriangle} label="Blockers" value={blockers} sub={blockers > 0 ? 'Needs attention' : 'All clear'} color={blockers > 0 ? 'red' : 'green'} href="/ProjectExecution" />
         <StatCard icon={DollarSign} label="Budget Used" value={budgetTotal ? `$${(budgetUsed / 1000).toFixed(0)}k` : '—'} sub={budgetTotal ? `of $${(budgetTotal / 1000).toFixed(0)}k total` : 'Not set'} color="green" href="/ProjectExecution" />
       </div>
 
+      {/* Health + Investor Card */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 bg-white rounded-2xl border border-border p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
@@ -143,6 +209,7 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Milestones + Activity Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
@@ -155,13 +222,12 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="space-y-3">
-              {milestones.slice(0, 4).map(m => (
+              {milestones.slice(0, 5).map(m => (
                 <div key={m.id} className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full shrink-0 ${
                     m.status === 'completed' ? 'bg-green-500' :
                     m.status === 'in_progress' ? 'bg-amber-500' :
-                    m.status === 'blocked' ? 'bg-red-500' : 'bg-slate-300'
-                  }`} />
+                    m.status === 'blocked' ? 'bg-red-500' : 'bg-slate-300'}`} />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-foreground truncate">{m.title}</div>
                     <div className="text-xs text-muted-foreground">{m.due_date || 'No date set'}</div>
@@ -179,35 +245,64 @@ export default function Dashboard() {
           )}
         </div>
 
+        {/* Activity Feed */}
         <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-serif text-base font-semibold">Open Roles</h3>
-            <Link to="/TeamArchitecture" className="text-xs text-amber-500 hover:text-amber-600 flex items-center gap-1">View all <ArrowRight size={12} /></Link>
+          <div className="flex items-center gap-2 mb-4">
+            <Activity size={16} className="text-muted-foreground" />
+            <h3 className="font-serif text-base font-semibold">Activity Feed</h3>
           </div>
-          {roles.filter(r => r.status !== 'filled').length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground text-sm">
-              No open roles. <Link to="/TeamArchitecture" className="text-amber-500 hover:underline">Design team →</Link>
+          {activities.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground text-sm space-y-2">
+              <p>No recent activity yet.</p>
+              <p className="text-xs">Actions across the platform will appear here.</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {roles.filter(r => r.status !== 'filled').slice(0, 4).map(r => (
-                <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors">
-                  <div className="w-9 h-9 rounded-xl bg-white border border-border flex items-center justify-center">
-                    <Users size={14} className="text-muted-foreground" />
-                  </div>
+              {activities.map(a => (
+                <div key={a.id} className="flex items-start gap-3">
+                  <span className="text-lg shrink-0 leading-none mt-0.5">{activityIcons[a.type] || '📌'}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-foreground">{r.title}</div>
-                    <div className="text-xs text-muted-foreground capitalize">{r.status?.replace('_', ' ')}</div>
+                    <div className="text-sm font-medium text-foreground">{a.title}</div>
+                    {a.description && <div className="text-xs text-muted-foreground mt-0.5">{a.description}</div>}
+                    <div className="text-xs text-muted-foreground/60 mt-0.5">
+                      {new Date(a.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </div>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    r.priority === 'critical' ? 'bg-red-100 text-red-600' :
-                    r.priority === 'high' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
-                  }`}>{r.priority}</span>
                 </div>
               ))}
             </div>
           )}
         </div>
+      </div>
+
+      {/* Open Roles */}
+      <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-serif text-base font-semibold">Open Roles</h3>
+          <Link to="/TeamArchitecture" className="text-xs text-amber-500 hover:text-amber-600 flex items-center gap-1">View all <ArrowRight size={12} /></Link>
+        </div>
+        {roles.filter(r => r.status !== 'filled').length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            No open roles. <Link to="/TeamArchitecture" className="text-amber-500 hover:underline">Design team →</Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {roles.filter(r => r.status !== 'filled').slice(0, 6).map(r => (
+              <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors">
+                <div className="w-9 h-9 rounded-xl bg-white border border-border flex items-center justify-center">
+                  <Users size={14} className="text-muted-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-foreground">{r.title}</div>
+                  <div className="text-xs text-muted-foreground capitalize">{r.status?.replace('_', ' ')}</div>
+                </div>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
+                  r.priority === 'critical' ? 'bg-red-100 text-red-600' :
+                  r.priority === 'high' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>{r.priority}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

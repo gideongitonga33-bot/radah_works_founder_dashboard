@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useProject } from '@/lib/ProjectContext';
-import { Sparkles, TrendingUp, Loader2, Save, FileText, BarChart3, Users, DollarSign } from 'lucide-react';
+import { Sparkles, TrendingUp, Loader2, FileText, BarChart3, Users, DollarSign, CheckSquare, Square, Download } from 'lucide-react';
 
 const ScoreSection = ({ label, score, description }) => (
   <div className="flex items-center gap-4">
@@ -21,12 +21,32 @@ const ScoreSection = ({ label, score, description }) => (
   </div>
 );
 
+const pitchChecklist = [
+  { id: 'problem', label: 'Problem & market size defined', field: 'problem_statement' },
+  { id: 'solution', label: 'Solution & product described', field: 'value_proposition' },
+  { id: 'market', label: 'Target market & ICP defined', field: 'target_market' },
+  { id: 'revenue', label: 'Revenue model established', field: 'revenue_model' },
+  { id: 'competition', label: 'Competitive analysis done', field: 'competitive_landscape' },
+  { id: 'metrics', label: 'Success metrics defined', field: 'success_metrics' },
+  { id: 'team', label: 'Core team structure ready', field: null, dynamic: 'team_completion' },
+  { id: 'mvp', label: 'MVP scope defined', field: 'mvp_scope' },
+];
+
 export default function InvestorReadiness() {
   const { currentProject, setCurrentProject } = useProject();
-  const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
+  const [generatedTitle, setGeneratedTitle] = useState('');
   const [activeTab, setActiveTab] = useState('score');
+  const [savedDocs, setSavedDocs] = useState([]);
+  const [loadingSaved, setLoadingSaved] = useState(true);
+
+  useEffect(() => {
+    if (!currentProject?.id) return;
+    base44.entities.SavedDocument.filter({ project_id: currentProject.id })
+      .then(setSavedDocs)
+      .finally(() => setLoadingSaved(false));
+  }, [currentProject?.id]);
 
   if (!currentProject) return <div className="text-muted-foreground text-sm">No project selected.</div>;
 
@@ -38,6 +58,7 @@ export default function InvestorReadiness() {
     { label: 'Team Architecture', score: currentProject.team_completion || 10, description: `${currentProject.team_completion || 0}% of team roles filled` },
     { label: 'Revenue Model', score: currentProject.revenue_model ? 75 : 20, description: currentProject.revenue_model ? 'Defined' : 'Add revenue model details' },
     { label: 'Execution Progress', score: currentProject.execution_progress || 5, description: `${currentProject.execution_progress || 0}% milestones complete` },
+    { label: 'Competitive Landscape', score: currentProject.competitive_landscape ? 70 : 15, description: currentProject.competitive_landscape ? 'Analyzed' : 'Add competitive analysis' },
   ];
 
   const avgScore = Math.round(sections.reduce((s, sec) => s + sec.score, 0) / sections.length);
@@ -47,50 +68,98 @@ export default function InvestorReadiness() {
     setCurrentProject({ ...currentProject, investor_readiness_score: avgScore });
   };
 
-  const handleGenerate = async (type) => {
+  const handleGenerate = async (type, label) => {
     setGenerating(true);
+    setGeneratedTitle(label);
     setActiveTab('document');
     const prompts = {
       summary: `Write a professional investor summary for this startup. Use executive language and be compelling.
 
-Project: ${currentProject.name}
-Stage: ${currentProject.stage}
+Project: ${currentProject.name} | Stage: ${currentProject.stage}
 Description: ${currentProject.description || ''}
 Problem: ${currentProject.problem_statement || ''}
 Value Proposition: ${currentProject.value_proposition || ''}
 Revenue Model: ${currentProject.revenue_model || ''}
 Target Market: ${currentProject.target_market || ''}
 
-Write a 3-paragraph investor summary that covers: the problem & opportunity, the solution & traction, and the ask & vision.`,
+Write a 3-paragraph investor summary: problem & opportunity, solution & traction, the ask & vision.`,
 
-      onepager: `Create a professional one-pager document for investor outreach for this startup.
+      onepager: `Create a professional one-pager for investor outreach.
 
-Project: ${currentProject.name}
-Stage: ${currentProject.stage}  
+Project: ${currentProject.name} | Stage: ${currentProject.stage}
 Description: ${currentProject.description || ''}
 
-Format it with clear sections: Overview, Problem, Solution, Market, Business Model, Team Needs, and Why Now.`,
+Format with sections: Overview, Problem, Solution, Market, Business Model, Team Needs, Why Now.`,
 
-      brief: `Write a concise executive brief for this startup that can be sent to potential investors.
+      brief: `Write a concise executive brief for potential investors.
 
-Project: ${currentProject.name}
-Stage: ${currentProject.stage}
+Project: ${currentProject.name} | Stage: ${currentProject.stage}
 Description: ${currentProject.description || ''}
 Value Proposition: ${currentProject.value_proposition || ''}
+Revenue Model: ${currentProject.revenue_model || ''}
+Competitive Landscape: ${currentProject.competitive_landscape || ''}
 
-Make it punchy and professional. Highlight the key differentiators and investment opportunity.`,
+Make it punchy, highlight key differentiators, investment opportunity, and financial projections.`,
+
+      pitch_narrative: `Write a compelling pitch narrative / story for ${currentProject.name}.
+
+Stage: ${currentProject.stage}
+Problem: ${currentProject.problem_statement || ''}
+Market: ${currentProject.target_market || ''}
+Solution: ${currentProject.value_proposition || ''}
+Revenue: ${currentProject.revenue_model || ''}
+
+Tell the story in first person as the founder. Open with a customer pain point, build the narrative through the solution, market opportunity, and end with the vision. 400-500 words.`,
     };
 
     const res = await base44.integrations.Core.InvokeLLM({ prompt: prompts[type] });
     setGeneratedContent(res);
+
+    // Auto-save document
+    const existing = savedDocs.find(d => d.doc_type === type);
+    if (existing) {
+      await base44.entities.SavedDocument.update(existing.id, { content: res });
+      setSavedDocs(prev => prev.map(d => d.id === existing.id ? { ...d, content: res } : d));
+    } else {
+      const saved = await base44.entities.SavedDocument.create({
+        project_id: currentProject.id, doc_type: type, title: label, content: res,
+      });
+      setSavedDocs(prev => [...prev, saved]);
+    }
+
+    // Log activity
+    await base44.entities.Activity.create({
+      project_id: currentProject.id, type: 'investor',
+      title: `Generated: ${label}`, description: 'Investor document created'
+    });
+
     setGenerating(false);
   };
 
+  const handleDownload = (content, title) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title.replace(/ /g, '_')}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const tabs = [
-    { id: 'score', label: 'Readiness Score', icon: BarChart3 },
-    { id: 'documents', label: 'AI Documents', icon: FileText },
-    { id: 'document', label: 'Generated', icon: Sparkles },
+    { id: 'score', label: 'Score' },
+    { id: 'checklist', label: 'Checklist' },
+    { id: 'documents', label: 'AI Docs' },
+    { id: 'document', label: 'Preview' },
+    { id: 'saved', label: `Saved${savedDocs.length > 0 ? ` (${savedDocs.length})` : ''}` },
   ];
+
+  const checklistItems = pitchChecklist.map(item => ({
+    ...item,
+    done: item.field ? !!currentProject[item.field] :
+      (item.dynamic === 'team_completion' ? (currentProject.team_completion || 0) >= 50 : false)
+  }));
+  const checklistScore = Math.round((checklistItems.filter(i => i.done).length / checklistItems.length) * 100);
 
   return (
     <div className="max-w-3xl space-y-5">
@@ -100,7 +169,7 @@ Make it punchy and professional. Highlight the key differentiators and investmen
           <p className="text-muted-foreground text-sm mt-1">Track your fundraising readiness and generate materials</p>
         </div>
         <button onClick={handleRecalculate} className="flex items-center gap-2 px-4 py-2.5 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 transition-opacity">
-          <TrendingUp size={14} /> Recalculate Score
+          <TrendingUp size={14} /> Recalculate
         </button>
       </div>
 
@@ -115,24 +184,22 @@ Make it punchy and professional. Highlight the key differentiators and investmen
                score < 50 ? 'Making progress. Build out your team and refine your model.' :
                score < 70 ? 'Strong foundation. Work on traction and financial projections.' :
                score < 85 ? 'Looking good. Polish your deck and practice your pitch.' :
-               'Investor ready. You\'re in strong position to fundraise.'}
+               "Investor ready. You're in strong position to fundraise."}
             </p>
           </div>
-          <div className="w-24 h-24 rounded-full border-4 border-amber-400/30 flex items-center justify-center">
-            <div className="text-amber-400 text-2xl font-bold">{score >= 70 ? '✓' : score >= 40 ? '→' : '!'}</div>
+          <div className="text-right">
+            <div className="text-xs text-slate-500 mb-1">Checklist</div>
+            <div className="text-2xl font-bold text-amber-400">{checklistScore}%</div>
+            <div className="text-xs text-slate-500">{checklistItems.filter(i => i.done).length}/{checklistItems.length} done</div>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-muted rounded-xl p-1">
+      <div className="flex gap-1 bg-muted rounded-xl p-1 overflow-x-auto">
         {tabs.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setActiveTab(t.id)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === t.id ? 'bg-white shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-          >
-            <t.icon size={14} />
+          <button key={t.id} onClick={() => setActiveTab(t.id)}
+            className={`flex-1 py-2 px-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${activeTab === t.id ? 'bg-white shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
             {t.label}
           </button>
         ))}
@@ -145,49 +212,121 @@ Make it punchy and professional. Highlight the key differentiators and investmen
         </div>
       )}
 
+      {activeTab === 'checklist' && (
+        <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
+          <h3 className="font-serif text-base font-semibold mb-4">Pitch Readiness Checklist</h3>
+          <div className="space-y-3">
+            {checklistItems.map(item => (
+              <div key={item.id} className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${item.done ? 'bg-green-50' : 'bg-muted/40'}`}>
+                {item.done
+                  ? <CheckSquare size={18} className="text-green-500 shrink-0" />
+                  : <Square size={18} className="text-muted-foreground shrink-0" />}
+                <span className={`text-sm ${item.done ? 'text-green-800 line-through decoration-green-400/50' : 'text-foreground'}`}>{item.label}</span>
+                {!item.done && item.field && (
+                  <a href="/ProjectDescription" className="ml-auto text-xs text-amber-500 hover:underline shrink-0">Fill in →</a>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="mt-5 h-2 bg-muted rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full transition-all" style={{ width: `${checklistScore}%` }} />
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">{checklistItems.filter(i => i.done).length} of {checklistItems.length} items complete — {checklistScore}% pitch ready</p>
+        </div>
+      )}
+
       {activeTab === 'documents' && (
         <div className="grid grid-cols-1 gap-3">
           {[
             { type: 'summary', title: 'Investor Summary', desc: 'A compelling 3-paragraph overview for investor outreach', icon: Users },
-            { type: 'onepager', title: 'One-Pager', desc: 'Clean document covering all key aspects of your startup', icon: FileText },
-            { type: 'brief', title: 'Executive Brief', desc: 'Punchy, professional brief highlighting your differentiators', icon: BarChart3 },
-          ].map(doc => (
-            <div key={doc.type} className="bg-white rounded-2xl border border-border p-5 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
-                <doc.icon size={20} className="text-amber-600" />
+            { type: 'onepager', title: 'One-Pager', desc: 'Clean doc covering all key startup aspects', icon: FileText },
+            { type: 'brief', title: 'Executive Brief', desc: 'Punchy brief highlighting differentiators', icon: BarChart3 },
+            { type: 'pitch_narrative', title: 'Pitch Narrative', desc: 'Founder story for in-person pitches and video', icon: Sparkles },
+          ].map(doc => {
+            const saved = savedDocs.find(d => d.doc_type === doc.type);
+            return (
+              <div key={doc.type} className="bg-white rounded-2xl border border-border p-5 shadow-sm flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                  <doc.icon size={20} className="text-amber-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-serif text-base font-semibold">{doc.title}</h3>
+                  <p className="text-sm text-muted-foreground">{doc.desc}</p>
+                  {saved && <span className="text-xs text-green-600 font-medium">✓ Saved</span>}
+                </div>
+                <div className="flex gap-2">
+                  {saved && (
+                    <button onClick={() => { setGeneratedContent(saved.content); setGeneratedTitle(doc.title); setActiveTab('document'); }}
+                      className="px-3 py-2 text-sm border border-border rounded-xl hover:bg-muted transition-colors text-muted-foreground">
+                      View
+                    </button>
+                  )}
+                  <button onClick={() => handleGenerate(doc.type, doc.title)}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity shrink-0">
+                    <Sparkles size={13} /> {saved ? 'Regen' : 'Generate'}
+                  </button>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="font-serif text-base font-semibold">{doc.title}</h3>
-                <p className="text-sm text-muted-foreground">{doc.desc}</p>
-              </div>
-              <button
-                onClick={() => handleGenerate(doc.type)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity shrink-0"
-              >
-                <Sparkles size={13} /> Generate
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {activeTab === 'document' && (
-        <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
-          {generating ? (
-            <div className="flex flex-col items-center py-16 gap-3">
-              <Loader2 size={28} className="animate-spin text-amber-500" />
-              <p className="text-sm text-muted-foreground">AI is crafting your investor document...</p>
+        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+            <h3 className="font-serif text-base font-semibold">{generatedTitle || 'Generated Document'}</h3>
+            {generatedContent && !generating && (
+              <button onClick={() => handleDownload(generatedContent, generatedTitle)}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 border border-border rounded-lg hover:bg-muted transition-colors">
+                <Download size={12} /> Export .md
+              </button>
+            )}
+          </div>
+          <div className="p-6">
+            {generating ? (
+              <div className="flex flex-col items-center py-16 gap-3">
+                <Loader2 size={28} className="animate-spin text-amber-500" />
+                <p className="text-sm text-muted-foreground">AI is crafting your investor document...</p>
+              </div>
+            ) : generatedContent ? (
+              <pre className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">{generatedContent}</pre>
+            ) : (
+              <div className="text-center py-16 text-muted-foreground">
+                <Sparkles size={28} className="mx-auto mb-3 text-amber-400" />
+                <p className="text-sm">Generate a document from the AI Docs tab</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'saved' && (
+        <div className="space-y-3">
+          {loadingSaved ? (
+            <div className="flex items-center justify-center py-10"><Loader2 size={20} className="animate-spin text-muted-foreground" /></div>
+          ) : savedDocs.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground text-sm bg-white rounded-2xl border border-dashed border-border">
+              No saved documents yet. Generate documents from the AI Docs tab.
             </div>
-          ) : generatedContent ? (
-            <div className="prose prose-sm max-w-none text-foreground leading-relaxed whitespace-pre-wrap text-sm">
-              {generatedContent}
+          ) : savedDocs.map(doc => (
+            <div key={doc.id} className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                <h3 className="font-serif text-sm font-semibold">{doc.title}</h3>
+                <div className="flex gap-2">
+                  <button onClick={() => { setGeneratedContent(doc.content); setGeneratedTitle(doc.title); setActiveTab('document'); }}
+                    className="text-xs px-3 py-1.5 border border-border rounded-lg hover:bg-muted transition-colors">View</button>
+                  <button onClick={() => handleDownload(doc.content, doc.title)}
+                    className="flex items-center gap-1 text-xs px-3 py-1.5 border border-border rounded-lg hover:bg-muted transition-colors">
+                    <Download size={11} /> Export
+                  </button>
+                </div>
+              </div>
+              <div className="px-5 py-3 max-h-24 overflow-hidden">
+                <p className="text-xs text-muted-foreground line-clamp-3">{doc.content}</p>
+              </div>
             </div>
-          ) : (
-            <div className="text-center py-16 text-muted-foreground">
-              <Sparkles size={28} className="mx-auto mb-3 text-amber-400" />
-              <p className="text-sm">Select a document to generate from the AI Documents tab</p>
-            </div>
-          )}
+          ))}
         </div>
       )}
     </div>
