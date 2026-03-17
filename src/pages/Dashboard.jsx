@@ -59,10 +59,10 @@ const ProgressRing = ({ value, label, color }) => {
 };
 
 const quickActions = [
-  { label: 'Add Milestone', icon: Plus, href: '/ProjectExecution', color: 'bg-amber-50 text-amber-600 hover:bg-amber-100' },
-  { label: 'Find Candidates', icon: UserSearch, href: '/CandidatePipeline', color: 'bg-blue-50 text-blue-600 hover:bg-blue-100' },
-  { label: 'Update Brief', icon: FileText, href: '/ProjectDescription', color: 'bg-purple-50 text-purple-600 hover:bg-purple-100' },
-  { label: 'Investor Report', icon: TrendingUp, href: '/InvestorReadiness', color: 'bg-green-50 text-green-600 hover:bg-green-100' },
+  { label: 'Add Milestone', IconComp: Plus, href: '/ProjectExecution', color: 'bg-amber-50 text-amber-600 hover:bg-amber-100' },
+  { label: 'Find Candidates', IconComp: UserSearch, href: '/CandidatePipeline', color: 'bg-blue-50 text-blue-600 hover:bg-blue-100' },
+  { label: 'Update Brief', IconComp: FileText, href: '/ProjectDescription', color: 'bg-purple-50 text-purple-600 hover:bg-purple-100' },
+  { label: 'Investor Report', IconComp: TrendingUp, href: '/InvestorReadiness', color: 'bg-green-50 text-green-600 hover:bg-green-100' },
 ];
 
 export default function Dashboard() {
