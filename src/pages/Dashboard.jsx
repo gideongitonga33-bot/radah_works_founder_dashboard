@@ -161,7 +161,7 @@ Give one insight about where they stand and one specific action they should take
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {quickActions.map(a => (
           <Link key={a.label} to={a.href} className={`flex items-center gap-2.5 p-3 rounded-xl text-sm font-medium transition-all ${a.color}`}>
-            <a.icon size={16} />
+            <a.IconComp size={16} />
             {a.label}
           </Link>
         ))}
