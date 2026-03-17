@@ -8,7 +8,8 @@ import {
   Sparkles, Activity, Plus, FileText, UserSearch, MapPin
 } from 'lucide-react';
 
-const StatCard = ({ icon: Icon, label, value, sub, color = 'amber', href }) => {
+const StatCard = ({ icon: IconEl, label, value, sub, color = 'amber', href }) => {
+  const Icon = IconEl;
   const colors = {
     amber: 'text-amber-500 bg-amber-50',
     blue: 'text-blue-500 bg-blue-50',
