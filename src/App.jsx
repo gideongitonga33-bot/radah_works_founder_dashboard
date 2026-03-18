@@ -18,6 +18,7 @@ import InvestorReadiness from '@/pages/InvestorReadiness';
 import TeamMembers from '@/pages/TeamMembers';
 import Documents from '@/pages/Documents';
 import Settings from '@/pages/Settings';
+import TeamPerformance from '@/pages/TeamPerformance';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -54,6 +55,7 @@ const AuthenticatedApp = () => {
         <Route path="/TeamMembers" element={<TeamMembers />} />
         <Route path="/Documents" element={<Documents />} />
         <Route path="/Settings" element={<Settings />} />
+        <Route path="/TeamPerformance" element={<TeamPerformance />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

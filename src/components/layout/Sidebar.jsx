@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, FileText, Users, UserSearch,
   MapPin, TrendingUp, FolderOpen, UsersRound,
-  FileStack, Settings, ChevronLeft, ChevronRight, Zap
+  FileStack, Settings, ChevronLeft, ChevronRight, Zap, BarChart3
 } from 'lucide-react';
 import ProjectSwitcher from './ProjectSwitcher';
 
@@ -19,6 +19,7 @@ const navItems = [
 const secondaryItems = [
   { label: 'My Projects', icon: FolderOpen, path: '/MyProjects' },
   { label: 'Team Members', icon: UsersRound, path: '/TeamMembers' },
+  { label: 'Team Performance', icon: BarChart3, path: '/TeamPerformance' },
   { label: 'Documents', icon: FileStack, path: '/Documents' },
   { label: 'Settings', icon: Settings, path: '/Settings' },
 ];
