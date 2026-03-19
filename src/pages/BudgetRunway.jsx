@@ -10,6 +10,7 @@ import {
   Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area,
   AreaChart
 } from 'recharts';
+import RunwayForecastChart from '@/components/RunwayForecastChart';
 
 const CATEGORY_COLORS = {
   salary: 'bg-purple-100 text-purple-700',
