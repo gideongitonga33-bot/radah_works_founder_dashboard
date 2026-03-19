@@ -275,7 +275,7 @@ Give 2-3 specific, actionable insights on team performance and what the team sho
   const overdueCount = tasks.filter(t => t.due_date && t.status !== 'done' && new Date(t.due_date) < now).length;
 
   return (
-    <div className="max-w-5xl space-y-5">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

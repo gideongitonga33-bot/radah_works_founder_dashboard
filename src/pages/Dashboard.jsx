@@ -134,7 +134,7 @@ Give one insight about where they stand and one specific action they should take
   };
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
           <h2 className="font-serif text-2xl font-semibold text-foreground">Mission Control</h2>

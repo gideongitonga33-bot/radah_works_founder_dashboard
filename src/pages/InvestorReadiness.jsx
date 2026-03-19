@@ -162,7 +162,7 @@ Tell the story in first person as the founder. Open with a customer pain point, 
   const checklistScore = Math.round((checklistItems.filter(i => i.done).length / checklistItems.length) * 100);
 
   return (
-    <div className="max-w-3xl space-y-5">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-serif text-2xl font-semibold">Investor Readiness</h2>

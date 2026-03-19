@@ -193,7 +193,7 @@ export default function BudgetRunway() {
   const runwayBg = runway === null ? '' : runway <= 3 ? 'from-red-50 to-red-100 border-red-200' : runway <= 6 ? 'from-amber-50 to-orange-50 border-amber-200' : 'from-green-50 to-emerald-50 border-green-200';
 
   return (
-    <div className="max-w-5xl space-y-5">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

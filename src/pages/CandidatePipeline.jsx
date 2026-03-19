@@ -204,7 +204,7 @@ Create professional, realistic candidates with strong backgrounds appropriate fo
   const allSelected = candidates.filter(c => c.status === 'selected').length;
 
   return (
-    <div className="max-w-5xl space-y-5">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-serif text-2xl font-semibold">Candidate Pipeline</h2>

@@ -193,7 +193,7 @@ Generate 6-8 concrete milestones with realistic timelines for the next 6 months.
   const projectBudget = currentProject.budget_total || 0;
 
   return (
-    <div className="max-w-3xl space-y-5">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-serif text-2xl font-semibold">Execution Roadmap</h2>
