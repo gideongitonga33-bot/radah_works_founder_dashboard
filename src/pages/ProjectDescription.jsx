@@ -74,27 +74,67 @@ export default function ProjectDescription() {
   };
 
   const handleDownload = () => {
-    const sections = [
-      { label: 'Project Vision', field: 'description' },
-      { label: 'Problem Statement', field: 'problem_statement' },
-      { label: 'Target Market', field: 'target_market' },
-      { label: 'Customer Persona', field: 'customer_persona' },
-      { label: 'Value Proposition', field: 'value_proposition' },
-      { label: 'Competitive Landscape', field: 'competitive_landscape' },
-      { label: 'Core Product Features', field: 'core_features' },
-      { label: 'MVP Scope', field: 'mvp_scope' },
-      { label: 'Revenue Model', field: 'revenue_model' },
-      { label: 'Success Metrics', field: 'success_metrics' },
-    ];
-    const content = `# ${form.name || currentProject.name} — Project Brief\n\n` +
-      sections.map(s => `## ${s.label}\n${form[s.field] || 'Not defined'}`).join('\n\n');
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${(form.name || currentProject.name).replace(/ /g, '_')}_Project_Brief.md`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const { jsPDF } = window.jspdf || {};
+    import('jspdf').then(({ jsPDF }) => {
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+      const pageW = doc.internal.pageSize.getWidth();
+      const margin = 18;
+      const maxW = pageW - margin * 2;
+      let y = 24;
+
+      const addText = (text, size, bold, color) => {
+        doc.setFontSize(size);
+        doc.setFont('helvetica', bold ? 'bold' : 'normal');
+        if (color) doc.setTextColor(...color);
+        else doc.setTextColor(30, 30, 30);
+        const lines = doc.splitTextToSize(text, maxW);
+        lines.forEach(line => {
+          if (y > 272) { doc.addPage(); y = 18; }
+          doc.text(line, margin, y);
+          y += size * 0.45;
+        });
+        y += 2;
+      };
+
+      const sections = [
+        { label: 'Project Vision', field: 'description' },
+        { label: 'Problem Statement', field: 'problem_statement' },
+        { label: 'Target Market', field: 'target_market' },
+        { label: 'Customer Persona', field: 'customer_persona' },
+        { label: 'Value Proposition', field: 'value_proposition' },
+        { label: 'Competitive Landscape', field: 'competitive_landscape' },
+        { label: 'Core Product Features', field: 'core_features' },
+        { label: 'MVP Scope', field: 'mvp_scope' },
+        { label: 'Revenue Model', field: 'revenue_model' },
+        { label: 'Success Metrics', field: 'success_metrics' },
+      ];
+
+      // Title block
+      doc.setFillColor(30, 30, 40);
+      doc.rect(0, 0, pageW, 38, 'F');
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.text(form.name || currentProject.name, margin, 18);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(180, 180, 180);
+      doc.text(`Project Brief  ·  Stage: ${currentProject.stage || '—'}  ·  ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, margin, 30);
+      y = 50;
+
+      sections.forEach(s => {
+        addText(s.label, 12, true, [80, 60, 10]);
+        addText(form[s.field] || 'Not defined', 10, false, [50, 50, 50]);
+        y += 4;
+        if (y < 272) {
+          doc.setDrawColor(220, 210, 190);
+          doc.line(margin, y - 2, pageW - margin, y - 2);
+          y += 4;
+        }
+      });
+
+      doc.save(`${(form.name || currentProject.name).replace(/ /g, '_')}_Project_Brief.pdf`);
+    });
   };
 
   if (!currentProject) {
