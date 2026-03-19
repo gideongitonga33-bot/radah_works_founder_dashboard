@@ -1,8 +1,9 @@
-import { Bell, ChevronDown, Sparkles, Sun, Moon } from 'lucide-react';
+import { Bell, ChevronDown, Sparkles, Sun, Moon, LogOut } from 'lucide-react';
 import { useProject } from '@/lib/ProjectContext';
 import { useAuth } from '@/lib/AuthContext';
+import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const stageColors = {
   Idea: 'bg-purple-100 text-purple-700',
