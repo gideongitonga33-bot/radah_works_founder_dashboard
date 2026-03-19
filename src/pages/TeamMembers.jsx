@@ -24,7 +24,7 @@ export default function TeamMembers() {
   const totalComp = filledRoles.reduce((s, r) => s + (r.estimated_compensation || 0), 0);
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="space-y-6">
       <div>
         <h2 className="font-serif text-2xl font-semibold">Team Members</h2>
         <p className="text-muted-foreground text-sm mt-1">Active team for {currentProject?.name || 'your project'}</p>

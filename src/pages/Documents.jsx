@@ -111,7 +111,7 @@ Format: Executive Overview, Timeline summary, Milestone Details, Budget Allocati
   if (!currentProject) return <div className="text-muted-foreground text-sm">No project selected.</div>;
 
   return (
-    <div className="max-w-4xl space-y-5">
+    <div className="space-y-5">
       <div>
         <h2 className="font-serif text-2xl font-semibold">Documents</h2>
         <p className="text-muted-foreground text-sm mt-1">AI-generated project documents · {savedDocs.length} saved</p>
