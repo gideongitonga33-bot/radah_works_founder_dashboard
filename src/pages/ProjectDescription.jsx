@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useProject } from '@/lib/ProjectContext';
-import { Sparkles, Save, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkles, Save, Loader2, ChevronDown, ChevronUp, Download } from 'lucide-react';
 
 const Section = ({ label, field, value, onChange, placeholder, aiHelp }) => {
   const [expanded, setExpanded] = useState(true);
