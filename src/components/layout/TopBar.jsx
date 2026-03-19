@@ -59,13 +59,29 @@ export default function TopBar({ title }) {
           <Bell size={16} />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full" />
         </button>
-        <button className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-muted transition-colors">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-sm font-semibold">
-            {user?.full_name?.[0] || 'F'}
-          </div>
-          <span className="hidden sm:block text-sm font-medium text-foreground">{user?.full_name?.split(' ')[0] || 'Founder'}</span>
-          <ChevronDown size={14} className="text-muted-foreground hidden sm:block" />
-        </button>
+        <div className="relative" ref={menuRef}>
+          <button onClick={() => setShowMenu(!showMenu)} className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-muted transition-colors">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-sm font-semibold">
+              {user?.full_name?.[0] || 'F'}
+            </div>
+            <span className="hidden sm:block text-sm font-medium text-foreground">{user?.full_name?.split(' ')[0] || 'Founder'}</span>
+            <ChevronDown size={14} className="text-muted-foreground hidden sm:block" />
+          </button>
+          {showMenu && (
+            <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-border rounded-xl shadow-lg py-1 z-50">
+              <div className="px-3 py-2 border-b border-border">
+                <p className="text-xs font-medium text-foreground truncate">{user?.full_name || 'Founder'}</p>
+                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+              </div>
+              <button
+                onClick={() => base44.auth.logout()}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+              >
+                <LogOut size={14} /> Sign Out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
