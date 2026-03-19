@@ -48,7 +48,7 @@ const RoleCard = ({ role, onEdit, onDelete }) => (
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${priorityColors[role.priority] || 'bg-muted text-muted-foreground'}`}>{role.priority}</span>
       </div>
       {role.estimated_compensation && (
-        <span className="text-xs text-muted-foreground">${role.estimated_compensation.toLocaleString()}/yr</span>
+        <span className="text-xs text-muted-foreground">${role.estimated_compensation.toLocaleString()}/mo</span>
       )}
     </div>
   </div>
@@ -76,7 +76,7 @@ const RoleForm = ({ role, onSave, onCancel, projectId }) => {
       <textarea className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent resize-none" rows={2} placeholder="Responsibilities" value={form.responsibilities} onChange={e => setForm(p => ({ ...p, responsibilities: e.target.value }))} />
       <input className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" placeholder="Required skills (comma separated)" value={form.required_skills} onChange={e => setForm(p => ({ ...p, required_skills: e.target.value }))} />
       <div className="grid grid-cols-3 gap-2">
-        <input type="number" className="px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" placeholder="Compensation" value={form.estimated_compensation} onChange={e => setForm(p => ({ ...p, estimated_compensation: e.target.value }))} />
+        <input type="number" className="px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" placeholder="Compensation/mo" value={form.estimated_compensation} onChange={e => setForm(p => ({ ...p, estimated_compensation: e.target.value }))} />
         <select className="px-3 py-2 rounded-xl border border-border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400" value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}>
           <option value="open">Open</option>
           <option value="interviewing">Interviewing</option>

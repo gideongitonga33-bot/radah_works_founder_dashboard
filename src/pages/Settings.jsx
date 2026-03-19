@@ -83,11 +83,11 @@ export default function Settings() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium mb-1.5">Total Budget (USD)</label>
+            <label className="block text-sm font-medium mb-1.5">Monthly Budget (USD)</label>
             <input type="number" className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" value={form.budget_total || ''} onChange={e => setForm(p => ({ ...p, budget_total: parseFloat(e.target.value) || 0 }))} />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1.5">Budget Allocated (USD)</label>
+            <label className="block text-sm font-medium mb-1.5">Monthly Budget Allocated (USD)</label>
             <input type="number" className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" value={form.budget_allocated || ''} onChange={e => setForm(p => ({ ...p, budget_allocated: parseFloat(e.target.value) || 0 }))} />
           </div>
         </div>

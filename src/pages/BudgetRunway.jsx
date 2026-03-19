@@ -166,8 +166,9 @@ export default function BudgetRunway() {
     : 0;
   const totalCosts = entries.filter(e => e.type === 'cost').reduce((s, e) => s + e.amount, 0);
   const totalRevenue = entries.filter(e => e.type === 'revenue').reduce((s, e) => s + e.amount, 0);
-  const budgetRemaining = (currentProject.budget_total || 0) - totalCosts;
-  const runway = avgBurnRate > 0 ? Math.floor(budgetRemaining / avgBurnRate) : null;
+  const monthlyBudget = currentProject.budget_total || 0;
+  const currentMonthCosts = latestMonth?.costs || 0;
+  const runway = avgBurnRate > 0 && monthlyBudget > 0 ? Math.floor(monthlyBudget / avgBurnRate) : null;
 
   // ── Alerts ─────────────────────────────────────────────────────────────────
   const alerts = [];
@@ -177,8 +178,8 @@ export default function BudgetRunway() {
     alerts.push({ type: 'error', msg: `Critical: Only ${runway} month${runway === 1 ? '' : 's'} of runway remaining!` });
   if (runway !== null && runway > 3 && runway <= 6)
     alerts.push({ type: 'warning', msg: `Caution: ${runway} months of runway left — consider fundraising or reducing costs` });
-  if (totalCosts > (currentProject.budget_allocated || 0) && currentProject.budget_allocated)
-    alerts.push({ type: 'warning', msg: `Total costs ($${totalCosts.toLocaleString()}) exceed budget allocated ($${(currentProject.budget_allocated || 0).toLocaleString()})` });
+  if (currentMonthCosts > (currentProject.budget_allocated || 0) && currentProject.budget_allocated)
+    alerts.push({ type: 'warning', msg: `This month's costs ($${currentMonthCosts.toLocaleString()}) exceed monthly budget allocated ($${(currentProject.budget_allocated || 0).toLocaleString()})` });
 
   // ── Category breakdown ─────────────────────────────────────────────────────
   const categoryTotals = {};
@@ -259,19 +260,19 @@ export default function BudgetRunway() {
       </div>
 
       {/* Budget bar */}
-      {currentProject.budget_total > 0 && (
+      {monthlyBudget > 0 && (
         <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium">Budget Utilization</span>
-            <span className="text-sm font-semibold">${totalCosts.toLocaleString()} / ${(currentProject.budget_total || 0).toLocaleString()}</span>
+            <span className="text-sm font-medium">This Month's Spend vs Monthly Budget</span>
+            <span className="text-sm font-semibold">${currentMonthCosts.toLocaleString()} / ${monthlyBudget.toLocaleString()}</span>
           </div>
           <div className="h-3 bg-muted rounded-full overflow-hidden">
-            <div className={`h-full rounded-full transition-all ${totalCosts / currentProject.budget_total > 0.85 ? 'bg-red-500' : totalCosts / currentProject.budget_total > 0.6 ? 'bg-amber-500' : 'bg-green-500'}`}
-              style={{ width: `${Math.min(100, (totalCosts / currentProject.budget_total) * 100)}%` }} />
+            <div className={`h-full rounded-full transition-all ${currentMonthCosts / monthlyBudget > 0.85 ? 'bg-red-500' : currentMonthCosts / monthlyBudget > 0.6 ? 'bg-amber-500' : 'bg-green-500'}`}
+              style={{ width: `${Math.min(100, (currentMonthCosts / monthlyBudget) * 100)}%` }} />
           </div>
           <div className="flex justify-between text-xs text-muted-foreground mt-1.5">
-            <span>{Math.round((totalCosts / currentProject.budget_total) * 100)}% used</span>
-            <span>${Math.max(0, budgetRemaining).toLocaleString()} remaining</span>
+            <span>{Math.round((currentMonthCosts / monthlyBudget) * 100)}% of monthly budget used</span>
+            <span>${Math.max(0, monthlyBudget - currentMonthCosts).toLocaleString()} remaining this month</span>
           </div>
         </div>
       )}

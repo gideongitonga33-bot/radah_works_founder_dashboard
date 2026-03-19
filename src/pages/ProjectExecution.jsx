@@ -42,7 +42,17 @@ const MilestoneCard = ({ milestone, onEdit, onDelete, onUpdateStatus }) => {
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${conf.bg}`}>{conf.label}</span>
             {milestone.due_date && <span className="text-xs text-muted-foreground">{milestone.due_date}</span>}
             {milestone.responsible_role && <span className="text-xs text-muted-foreground">· {milestone.responsible_role}</span>}
-            {milestone.budget_allocated && <span className="text-xs text-muted-foreground">· ${milestone.budget_allocated.toLocaleString()}</span>}
+            {milestone.budget_allocated && (() => {
+              let monthlyNote = '';
+              if (milestone.start_date && milestone.due_date) {
+                const start = new Date(milestone.start_date);
+                const end = new Date(milestone.due_date);
+                const months = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24 * 30)));
+                const monthly = Math.round(milestone.budget_allocated / months);
+                monthlyNote = ` ≈ $${monthly.toLocaleString()}/mo`;
+              }
+              return <span className="text-xs text-muted-foreground">· ${milestone.budget_allocated.toLocaleString()} total{monthlyNote}</span>;
+            })()}
           </div>
           {milestone.status !== 'completed' && (
             <div className="mt-3">
@@ -63,7 +73,7 @@ const MilestoneCard = ({ milestone, onEdit, onDelete, onUpdateStatus }) => {
 
 const MilestoneForm = ({ milestone, onSave, onCancel, projectId }) => {
   const [form, setForm] = useState(milestone || {
-    title: '', description: '', due_date: '', status: 'not_started',
+    title: '', description: '', start_date: '', due_date: '', status: 'not_started',
     progress: 0, budget_allocated: '', responsible_role: '', deliverables: '', project_id: projectId
   });
   const [saving, setSaving] = useState(false);
@@ -84,7 +94,8 @@ const MilestoneForm = ({ milestone, onSave, onCancel, projectId }) => {
       <input className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" placeholder="Milestone title" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
       <textarea className="w-full px-3 py-2 rounded-xl border border-border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" rows={2} placeholder="Description" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
       <div className="grid grid-cols-2 gap-2">
-        <input type="date" className="px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" value={form.due_date} onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))} />
+        <input type="date" className="px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" placeholder="Start date" value={form.start_date} onChange={e => setForm(p => ({ ...p, start_date: e.target.value }))} />
+        <input type="date" className="px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" placeholder="Due date" value={form.due_date} onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))} />
         <select className="px-3 py-2 rounded-xl border border-border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400" value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}>
           <option value="not_started">Not Started</option>
           <option value="in_progress">In Progress</option>
@@ -209,7 +220,7 @@ Generate 6-8 concrete milestones with realistic timelines for the next 6 months.
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-xl font-semibold font-sans">${(projectBudget / 1000).toFixed(0)}k</div>
-              <div className="text-xs text-muted-foreground">Total Budget</div>
+              <div className="text-xs text-muted-foreground">Monthly Budget</div>
             </div>
             <div>
               <div className="text-xl font-semibold font-sans">${(totalBudget / 1000).toFixed(0)}k</div>
