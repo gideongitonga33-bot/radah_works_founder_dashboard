@@ -1,38 +1,39 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useProject } from '@/lib/ProjectContext';
-import { useNavigate } from 'react-router-dom';
-import { Save, Loader2, Trash2, UserPlus, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
-
-const stages = ['Idea', 'Prototype', 'MVP', 'Launch', 'Growth'];
+import { Save, Loader2, UserPlus, User, Building2 } from 'lucide-react';
 
 export default function Settings() {
-  const { currentProject, setCurrentProject } = useProject();
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [form, setForm] = useState({});
+  const [founderForm, setFounderForm] = useState({});
+  const [companyForm, setCompanyForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
   const [inviteMsg, setInviteMsg] = useState('');
-  const [showDanger, setShowDanger] = useState(false);
-  const [archiving, setArchiving] = useState(false);
 
   useEffect(() => {
-    if (currentProject) setForm(currentProject);
-  }, [currentProject?.id]);
+    if (user) {
+      setFounderForm({
+        bio: user.bio || '',
+        linkedin: user.linkedin || '',
+        phone: user.phone || '',
+        location: user.location || '',
+      });
+      setCompanyForm({
+        company_name: user.company_name || '',
+        industry: user.industry || '',
+        website: user.website || '',
+        company_stage: user.company_stage || '',
+        company_description: user.company_description || '',
+      });
+    }
+  }, [user?.email]);
 
   const handleSave = async () => {
-    if (!currentProject?.id) return;
     setSaving(true);
-    await base44.entities.Project.update(currentProject.id, form);
-    setCurrentProject({ ...currentProject, ...form });
-    await base44.entities.Activity.create({
-      project_id: currentProject.id, type: 'note',
-      title: 'Project settings updated', description: `Updated by ${user?.full_name || 'founder'}`
-    });
+    await base44.auth.updateMe({ ...founderForm, ...companyForm });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -48,68 +49,149 @@ export default function Settings() {
     setTimeout(() => setInviteMsg(''), 3000);
   };
 
-  const handleArchive = async () => {
-    setArchiving(true);
-    await base44.entities.Project.update(currentProject.id, { status: 'archived' });
-    setCurrentProject(null);
-    navigate('/MyProjects');
-  };
-
-  if (!currentProject) return <div className="text-muted-foreground text-sm">No project selected.</div>;
-
   return (
     <div className="max-w-xl space-y-6">
       <div>
-        <h2 className="font-serif text-2xl font-semibold">Project Settings</h2>
-        <p className="text-muted-foreground text-sm mt-1">Configure {currentProject.name}</p>
+        <h2 className="font-serif text-2xl font-semibold">Settings</h2>
+        <p className="text-muted-foreground text-sm mt-1">Manage your founder profile and company details</p>
       </div>
 
-      {/* Basic Info */}
+      {/* Founder Profile */}
       <div className="bg-white rounded-2xl border border-border p-6 shadow-sm space-y-4">
-        <h3 className="font-serif text-base font-semibold">Project Details</h3>
-        <div>
-          <label className="block text-sm font-medium mb-1.5">Project Name</label>
-          <input className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" value={form.name || ''} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
+        <h3 className="font-serif text-base font-semibold flex items-center gap-2">
+          <User size={16} /> Founder Profile
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Full Name</label>
+            <input
+              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-muted/30"
+              value={user?.full_name || ''}
+              disabled
+              title="Name is managed by your account"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Email</label>
+            <input
+              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-muted/30"
+              value={user?.email || ''}
+              disabled
+              title="Email is managed by your account"
+            />
+          </div>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1.5">Stage</label>
-          <div className="flex gap-2 flex-wrap">
-            {stages.map(s => (
-              <button key={s} onClick={() => setForm(p => ({ ...p, stage: s }))} className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${form.stage === s ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground hover:bg-muted/70'}`}>
-                {s}
-              </button>
-            ))}
+          <label className="block text-sm font-medium mb-1.5">Bio</label>
+          <textarea
+            rows={3}
+            className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+            placeholder="Tell us about yourself as a founder..."
+            value={founderForm.bio || ''}
+            onChange={e => setFounderForm(p => ({ ...p, bio: e.target.value }))}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium mb-1.5">LinkedIn URL</label>
+            <input
+              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              placeholder="https://linkedin.com/in/..."
+              value={founderForm.linkedin || ''}
+              onChange={e => setFounderForm(p => ({ ...p, linkedin: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Phone</label>
+            <input
+              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              placeholder="+1 234 567 8900"
+              value={founderForm.phone || ''}
+              onChange={e => setFounderForm(p => ({ ...p, phone: e.target.value }))}
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1.5">Location</label>
+          <input
+            className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            placeholder="City, Country"
+            value={founderForm.location || ''}
+            onChange={e => setFounderForm(p => ({ ...p, location: e.target.value }))}
+          />
+        </div>
+      </div>
+
+      {/* Company Details */}
+      <div className="bg-white rounded-2xl border border-border p-6 shadow-sm space-y-4">
+        <h3 className="font-serif text-base font-semibold flex items-center gap-2">
+          <Building2 size={16} /> Company Details
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Company Name</label>
+            <input
+              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              placeholder="Acme Inc."
+              value={companyForm.company_name || ''}
+              onChange={e => setCompanyForm(p => ({ ...p, company_name: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Industry</label>
+            <input
+              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              placeholder="e.g. FinTech, HealthTech"
+              value={companyForm.industry || ''}
+              onChange={e => setCompanyForm(p => ({ ...p, industry: e.target.value }))}
+            />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium mb-1.5">Monthly Budget (USD)</label>
-            <input type="number" className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" value={form.budget_total || ''} onChange={e => setForm(p => ({ ...p, budget_total: parseFloat(e.target.value) || 0 }))} />
+            <label className="block text-sm font-medium mb-1.5">Website</label>
+            <input
+              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              placeholder="https://yourcompany.com"
+              value={companyForm.website || ''}
+              onChange={e => setCompanyForm(p => ({ ...p, website: e.target.value }))}
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1.5">Monthly Budget Allocated (USD)</label>
-            <input type="number" className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent" value={form.budget_allocated || ''} onChange={e => setForm(p => ({ ...p, budget_allocated: parseFloat(e.target.value) || 0 }))} />
+            <label className="block text-sm font-medium mb-1.5">Company Stage</label>
+            <select
+              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+              value={companyForm.company_stage || ''}
+              onChange={e => setCompanyForm(p => ({ ...p, company_stage: e.target.value }))}
+            >
+              <option value="">Select stage...</option>
+              <option value="Pre-idea">Pre-idea</option>
+              <option value="Idea">Idea</option>
+              <option value="Prototype">Prototype</option>
+              <option value="MVP">MVP</option>
+              <option value="Early Traction">Early Traction</option>
+              <option value="Growth">Growth</option>
+              <option value="Scale">Scale</option>
+            </select>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label className="block text-sm font-medium mb-1.5">Team Completion %</label>
-            <input type="number" min="0" max="100" className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" value={form.team_completion || ''} onChange={e => setForm(p => ({ ...p, team_completion: parseFloat(e.target.value) || 0 }))} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1.5">Execution %</label>
-            <input type="number" min="0" max="100" className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" value={form.execution_progress || ''} onChange={e => setForm(p => ({ ...p, execution_progress: parseFloat(e.target.value) || 0 }))} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1.5">Investor Score %</label>
-            <input type="number" min="0" max="100" className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" value={form.investor_readiness_score || ''} onChange={e => setForm(p => ({ ...p, investor_readiness_score: parseFloat(e.target.value) || 0 }))} />
-          </div>
+        <div>
+          <label className="block text-sm font-medium mb-1.5">Company Description</label>
+          <textarea
+            rows={3}
+            className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+            placeholder="What does your company do?"
+            value={companyForm.company_description || ''}
+            onChange={e => setCompanyForm(p => ({ ...p, company_description: e.target.value }))}
+          />
         </div>
-        <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 transition-opacity">
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-          {saved ? '✓ Saved!' : 'Save Changes'}
-        </button>
       </div>
+
+      <button onClick={handleSave} disabled={saving}
+        className="flex items-center gap-2 px-5 py-2.5 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
+        {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+        {saved ? '✓ Saved!' : 'Save Profile'}
+      </button>
 
       {/* Invite Collaborator */}
       <div className="bg-white rounded-2xl border border-border p-6 shadow-sm space-y-3">
@@ -130,22 +212,6 @@ export default function Settings() {
           </button>
         </div>
         {inviteMsg && <p className="text-sm text-green-600 font-medium">{inviteMsg}</p>}
-      </div>
-
-      {/* Danger Zone */}
-      <div className="bg-white rounded-2xl border border-red-100 p-6 shadow-sm space-y-3">
-        <button onClick={() => setShowDanger(!showDanger)} className="flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700">
-          <AlertTriangle size={16} /> Danger Zone {showDanger ? '▲' : '▼'}
-        </button>
-        {showDanger && (
-          <div className="space-y-3 pt-2 border-t border-red-100">
-            <p className="text-sm text-muted-foreground">Archiving will hide this project from your active workspace. You can unarchive from My Projects.</p>
-            <button onClick={handleArchive} disabled={archiving}
-              className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-medium hover:bg-red-100 disabled:opacity-40">
-              {archiving ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />} Archive Project
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
