@@ -19,6 +19,7 @@ import TeamMembers from '@/pages/TeamMembers';
 import Documents from '@/pages/Documents';
 import Settings from '@/pages/Settings';
 import TeamPerformance from '@/pages/TeamPerformance';
+import BudgetRunway from '@/pages/BudgetRunway';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -56,6 +57,7 @@ const AuthenticatedApp = () => {
         <Route path="/Documents" element={<Documents />} />
         <Route path="/Settings" element={<Settings />} />
         <Route path="/TeamPerformance" element={<TeamPerformance />} />
+        <Route path="/BudgetRunway" element={<BudgetRunway />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, FileText, Users, UserSearch,
   MapPin, TrendingUp, FolderOpen, UsersRound,
-  FileStack, Settings, ChevronLeft, ChevronRight, Zap, BarChart3
+  FileStack, Settings, ChevronLeft, ChevronRight, Zap, BarChart3, Flame
 } from 'lucide-react';
 import ProjectSwitcher from './ProjectSwitcher';
 
@@ -13,6 +13,7 @@ const navItems = [
   { label: 'Team Architecture', icon: Users, path: '/TeamArchitecture' },
   { label: 'Candidates', icon: UserSearch, path: '/CandidatePipeline' },
   { label: 'Execution', icon: MapPin, path: '/ProjectExecution' },
+  { label: 'Budget & Runway', icon: Flame, path: '/BudgetRunway' },
   { label: 'Investor Readiness', icon: TrendingUp, path: '/InvestorReadiness' },
 ];
 
