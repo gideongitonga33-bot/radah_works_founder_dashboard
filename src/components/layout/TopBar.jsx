@@ -17,6 +17,14 @@ export default function TopBar({ title }) {
   const { currentProject } = useProject();
   const { user } = useAuth();
   const [dark, setDark] = useState(() => localStorage.getItem('radah_dark') === 'true');
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setShowMenu(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
