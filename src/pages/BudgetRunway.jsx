@@ -7,7 +7,8 @@ import {
 } from 'lucide-react';
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area
+  Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area,
+  AreaChart
 } from 'recharts';
 
 const CATEGORY_COLORS = {
