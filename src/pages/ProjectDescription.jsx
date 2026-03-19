@@ -66,11 +66,35 @@ export default function ProjectDescription() {
 
   const handleSave = async () => {
     setSaving(true);
-    const updated = await base44.entities.Project.update(currentProject.id, form);
+    await base44.entities.Project.update(currentProject.id, form);
     setCurrentProject({ ...currentProject, ...form });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleDownload = () => {
+    const sections = [
+      { label: 'Project Vision', field: 'description' },
+      { label: 'Problem Statement', field: 'problem_statement' },
+      { label: 'Target Market', field: 'target_market' },
+      { label: 'Customer Persona', field: 'customer_persona' },
+      { label: 'Value Proposition', field: 'value_proposition' },
+      { label: 'Competitive Landscape', field: 'competitive_landscape' },
+      { label: 'Core Product Features', field: 'core_features' },
+      { label: 'MVP Scope', field: 'mvp_scope' },
+      { label: 'Revenue Model', field: 'revenue_model' },
+      { label: 'Success Metrics', field: 'success_metrics' },
+    ];
+    const content = `# ${form.name || currentProject.name} — Project Brief\n\n` +
+      sections.map(s => `## ${s.label}\n${form[s.field] || 'Not defined'}`).join('\n\n');
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(form.name || currentProject.name).replace(/ /g, '_')}_Project_Brief.md`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   if (!currentProject) {
