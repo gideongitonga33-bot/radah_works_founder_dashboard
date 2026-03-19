@@ -121,14 +121,22 @@ export default function ProjectDescription() {
           <h2 className="font-serif text-2xl font-semibold">Project Brief</h2>
           <p className="text-muted-foreground text-sm mt-1">Define your startup with clarity and precision</p>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-4 py-2.5 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
-        >
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-          {saved ? 'Saved!' : 'Save Blueprint'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleDownload}
+            className="flex items-center gap-2 px-4 py-2.5 border border-border rounded-xl text-sm font-medium hover:bg-muted transition-colors text-muted-foreground"
+          >
+            <Download size={14} /> Download
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 px-4 py-2.5 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {saved ? 'Saved!' : 'Save Blueprint'}
+          </button>
+        </div>
       </div>
 
       {sections.map(s => (
