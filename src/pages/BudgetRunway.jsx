@@ -299,6 +299,11 @@ export default function BudgetRunway() {
         )}
       </div>
 
+      {/* Runway Forecast Chart */}
+      {monthlyBudget > 0 && avgBurnRate > 0 && (
+        <RunwayForecastChart monthlyBudget={monthlyBudget} avgBurnRate={avgBurnRate} runway={runway} />
+      )}
+
       {/* Tabs */}
       <div className="flex gap-1 bg-muted rounded-xl p-1">
         {['overview', 'entries'].map(t => (
