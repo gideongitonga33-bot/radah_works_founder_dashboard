@@ -1,0 +1,27 @@
+{
+  "name": "SavedDocument",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "doc_type": {
+      "type": "string",
+      "title": "Document Type"
+    },
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "content": {
+      "type": "string",
+      "title": "Content"
+    }
+  },
+  "required": [
+    "project_id",
+    "doc_type",
+    "title"
+  ]
+}

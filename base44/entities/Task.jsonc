@@ -1,0 +1,74 @@
+{
+  "name": "Task",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "milestone_id": {
+      "type": "string",
+      "title": "Milestone ID"
+    },
+    "assigned_to_id": {
+      "type": "string",
+      "title": "Assigned Team Member ID"
+    },
+    "assigned_to_name": {
+      "type": "string",
+      "title": "Assigned To"
+    },
+    "title": {
+      "type": "string",
+      "title": "Task Title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "todo",
+        "in_progress",
+        "done",
+        "blocked"
+      ],
+      "default": "todo",
+      "title": "Status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "medium",
+      "title": "Priority"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Due Date"
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Completed Date"
+    },
+    "estimated_hours": {
+      "type": "number",
+      "title": "Estimated Hours"
+    },
+    "actual_hours": {
+      "type": "number",
+      "title": "Actual Hours"
+    }
+  },
+  "required": [
+    "project_id",
+    "title"
+  ]
+}

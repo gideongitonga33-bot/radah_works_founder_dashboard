@@ -1,0 +1,68 @@
+{
+  "name": "Candidate",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "role_id": {
+      "type": "string",
+      "title": "Role ID"
+    },
+    "name": {
+      "type": "string",
+      "title": "Name"
+    },
+    "title": {
+      "type": "string",
+      "title": "Current Title"
+    },
+    "skills": {
+      "type": "string",
+      "title": "Skills"
+    },
+    "summary": {
+      "type": "string",
+      "title": "Profile Summary"
+    },
+    "availability": {
+      "type": "string",
+      "title": "Availability"
+    },
+    "score": {
+      "type": "number",
+      "title": "Score"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "recommended",
+        "shortlisted",
+        "interview_scheduled",
+        "selected",
+        "rejected"
+      ],
+      "default": "recommended",
+      "title": "Status"
+    },
+    "interview_notes": {
+      "type": "string",
+      "title": "Interview Notes"
+    },
+    "interview_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Interview Date"
+    },
+    "avatar_url": {
+      "type": "string",
+      "title": "Avatar URL"
+    }
+  },
+  "required": [
+    "project_id",
+    "role_id",
+    "name"
+  ]
+}

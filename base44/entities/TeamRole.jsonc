@@ -1,0 +1,55 @@
+{
+  "name": "TeamRole",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "title": {
+      "type": "string",
+      "title": "Role Title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "responsibilities": {
+      "type": "string",
+      "title": "Responsibilities"
+    },
+    "required_skills": {
+      "type": "string",
+      "title": "Required Skills"
+    },
+    "estimated_compensation": {
+      "type": "number",
+      "title": "Estimated Compensation (Monthly)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "interviewing",
+        "filled"
+      ],
+      "default": "open",
+      "title": "Status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "high",
+      "title": "Priority"
+    }
+  },
+  "required": [
+    "project_id",
+    "title"
+  ]
+}

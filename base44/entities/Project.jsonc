@@ -1,0 +1,94 @@
+{
+  "name": "Project",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Project Name"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "Idea",
+        "Prototype",
+        "MVP",
+        "Launch",
+        "Growth"
+      ],
+      "title": "Stage"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "problem_statement": {
+      "type": "string",
+      "title": "Problem Statement"
+    },
+    "target_market": {
+      "type": "string",
+      "title": "Target Market"
+    },
+    "value_proposition": {
+      "type": "string",
+      "title": "Value Proposition"
+    },
+    "revenue_model": {
+      "type": "string",
+      "title": "Revenue Model"
+    },
+    "mvp_scope": {
+      "type": "string",
+      "title": "MVP Scope"
+    },
+    "budget_total": {
+      "type": "number",
+      "title": "Monthly Budget"
+    },
+    "budget_allocated": {
+      "type": "number",
+      "title": "Monthly Budget Allocated"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active",
+      "title": "Status"
+    },
+    "team_completion": {
+      "type": "number",
+      "title": "Team Completion %"
+    },
+    "execution_progress": {
+      "type": "number",
+      "title": "Execution Progress %"
+    },
+    "investor_readiness_score": {
+      "type": "number",
+      "title": "Investor Readiness Score"
+    },
+    "competitive_landscape": {
+      "type": "string",
+      "title": "Competitive Landscape"
+    },
+    "success_metrics": {
+      "type": "string",
+      "title": "Success Metrics"
+    },
+    "customer_persona": {
+      "type": "string",
+      "title": "Customer Persona"
+    },
+    "core_features": {
+      "type": "string",
+      "title": "Core Features"
+    }
+  },
+  "required": [
+    "name",
+    "stage"
+  ]
+}

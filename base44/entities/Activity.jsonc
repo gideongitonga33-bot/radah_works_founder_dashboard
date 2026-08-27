@@ -1,0 +1,38 @@
+{
+  "name": "Activity",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "milestone",
+        "candidate",
+        "role",
+        "document",
+        "note",
+        "investor"
+      ],
+      "title": "Type"
+    },
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "icon": {
+      "type": "string",
+      "title": "Icon"
+    }
+  },
+  "required": [
+    "project_id",
+    "title"
+  ]
+}

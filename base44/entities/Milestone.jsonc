@@ -1,0 +1,59 @@
+{
+  "name": "Milestone",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Start Date"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Due Date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "in_progress",
+        "completed",
+        "blocked"
+      ],
+      "default": "not_started",
+      "title": "Status"
+    },
+    "progress": {
+      "type": "number",
+      "title": "Progress %"
+    },
+    "budget_allocated": {
+      "type": "number",
+      "title": "Total Budget Allocated"
+    },
+    "responsible_role": {
+      "type": "string",
+      "title": "Responsible Role"
+    },
+    "deliverables": {
+      "type": "string",
+      "title": "Deliverables"
+    }
+  },
+  "required": [
+    "project_id",
+    "title"
+  ]
+}

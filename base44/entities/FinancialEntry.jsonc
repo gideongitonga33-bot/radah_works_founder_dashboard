@@ -1,0 +1,52 @@
+{
+  "name": "FinancialEntry",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "month": {
+      "type": "string",
+      "title": "Month (YYYY-MM)"
+    },
+    "label": {
+      "type": "string",
+      "title": "Label"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "salary",
+        "infrastructure",
+        "marketing",
+        "operations",
+        "other"
+      ],
+      "title": "Category"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "cost",
+        "revenue",
+        "projection"
+      ],
+      "title": "Type"
+    },
+    "amount": {
+      "type": "number",
+      "title": "Amount (USD)"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notes"
+    }
+  },
+  "required": [
+    "project_id",
+    "month",
+    "type",
+    "amount"
+  ]
+}
